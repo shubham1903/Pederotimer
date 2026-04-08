@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Focus — Pomodoro Timer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;min-height:100%;overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;position:relative;}
+.scene{position:fixed;inset:0;z-index:0;overflow:hidden;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.75;will-change:transform;}
+@keyframes drift1{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(80px,-60px) scale(1.15);}66%{transform:translate(-50px,80px) scale(0.9);}}
+@keyframes drift2{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(-90px,60px) scale(0.85);}66%{transform:translate(60px,-80px) scale(1.2);}}
+@keyframes drift3{0%,100%{transform:translate(0,0) scale(1.05);}50%{transform:translate(70px,70px) scale(0.9);}}
+@keyframes drift4{0%,100%{transform:translate(0,0) scale(0.95);}40%{transform:translate(-60px,-70px) scale(1.1);}80%{transform:translate(50px,30px) scale(1);}}
+
+body.theme-soothing .scene{background:#0d0718;}
+body.theme-soothing .o1{width:600px;height:600px;background:#7c3aed;top:-120px;left:-100px;animation:drift1 18s ease-in-out infinite;}
+body.theme-soothing .o2{width:500px;height:500px;background:#db2777;top:30%;right:-80px;animation:drift2 22s ease-in-out infinite;}
+body.theme-soothing .o3{width:400px;height:400px;background:#9333ea;bottom:-80px;left:30%;animation:drift3 15s ease-in-out infinite;}
+body.theme-soothing .o4{width:300px;height:300px;background:#c026d3;top:55%;left:10%;animation:drift4 20s ease-in-out infinite;}
+body.theme-soothing{color:#f0e8ff;}
+body.theme-calm .scene{background:#020c18;}
+body.theme-calm .o1{width:620px;height:620px;background:#0891b2;top:-140px;left:-80px;animation:drift1 20s ease-in-out infinite;}
+body.theme-calm .o2{width:480px;height:480px;background:#0d9488;top:40%;right:-100px;animation:drift2 25s ease-in-out infinite;}
+body.theme-calm .o3{width:380px;height:380px;background:#2563eb;bottom:-60px;left:25%;animation:drift3 17s ease-in-out infinite;}
+body.theme-calm .o4{width:280px;height:280px;background:#06b6d4;top:50%;left:5%;animation:drift4 22s ease-in-out infinite;}
+body.theme-calm{color:#e0f7fa;}
+body.theme-morning .scene{background:#100800;}
+body.theme-morning .o1{width:700px;height:700px;background:#f59e0b;top:-200px;left:-150px;animation:drift1 16s ease-in-out infinite;}
+body.theme-morning .o2{width:500px;height:500px;background:#ef4444;top:20%;right:-120px;animation:drift2 20s ease-in-out infinite;}
+body.theme-morning .o3{width:450px;height:450px;background:#f97316;bottom:-100px;left:20%;animation:drift3 18s ease-in-out infinite;}
+body.theme-morning .o4{width:320px;height:320px;background:#fbbf24;top:45%;left:40%;animation:drift4 24s ease-in-out infinite;}
+body.theme-morning{color:#fff8e8;}
+body.theme-evening .scene{background:#080010;}
+body.theme-evening .o1{width:640px;height:640px;background:#7c3aed;top:-180px;left:-120px;animation:drift1 22s ease-in-out infinite;}
+body.theme-evening .o2{width:520px;height:520px;background:#f43f5e;bottom:-60px;right:-80px;animation:drift2 18s ease-in-out infinite;}
+body.theme-evening .o3{width:420px;height:420px;background:#4f46e5;top:30%;left:30%;animation:drift3 20s ease-in-out infinite;}
+body.theme-evening .o4{width:360px;height:360px;background:#fb923c;bottom:10%;left:-60px;animation:drift4 16s ease-in-out infinite;}
+body.theme-evening{color:#ffe8f8;}
+body.theme-coffee .scene{background:#0d0600;}
+body.theme-coffee .o1{width:580px;height:580px;background:#92400e;top:-100px;left:-80px;animation:drift1 24s ease-in-out infinite;}
+body.theme-coffee .o2{width:460px;height:460px;background:#78350f;top:35%;right:-90px;animation:drift2 20s ease-in-out infinite;}
+body.theme-coffee .o3{width:400px;height:400px;background:#b45309;bottom:-80px;left:20%;animation:drift3 22s ease-in-out infinite;}
+body.theme-coffee .o4{width:300px;height:300px;background:#d97706;top:55%;left:50%;animation:drift4 18s ease-in-out infinite;}
+body.theme-coffee{color:#fdf0dc;}
+body.theme-forest .scene{background:#010c04;}
+body.theme-forest .o1{width:600px;height:600px;background:#065f46;top:-120px;left:-100px;animation:drift1 26s ease-in-out infinite;}
+body.theme-forest .o2{width:480px;height:480px;background:#047857;top:40%;right:-80px;animation:drift2 22s ease-in-out infinite;}
+body.theme-forest .o3{width:420px;height:420px;background:#15803d;bottom:-70px;left:25%;animation:drift3 18s ease-in-out infinite;}
+body.theme-forest .o4{width:300px;height:300px;background:#4ade80;top:50%;left:60%;animation:drift4 20s ease-in-out infinite;opacity:0.4;}
+body.theme-forest{color:#e0f8e8;}
+body.theme-ocean .scene{background:#000410;}
+body.theme-ocean .o1{width:660px;height:660px;background:#1d4ed8;top:-160px;left:-120px;animation:drift1 20s ease-in-out infinite;}
+body.theme-ocean .o2{width:500px;height:500px;background:#0e7490;bottom:-100px;right:-80px;animation:drift2 24s ease-in-out infinite;}
+body.theme-ocean .o3{width:440px;height:440px;background:#1e40af;top:30%;left:30%;animation:drift3 17s ease-in-out infinite;}
+body.theme-ocean .o4{width:320px;height:320px;background:#0891b2;top:60%;left:5%;animation:drift4 22s ease-in-out infinite;}
+body.theme-ocean{color:#e0f4ff;}
+body.theme-midnight .scene{background:#02020a;}
+body.theme-midnight .o1{width:500px;height:500px;background:#1e1b4b;top:-120px;left:-80px;animation:drift1 30s ease-in-out infinite;opacity:0.9;}
+body.theme-midnight .o2{width:420px;height:420px;background:#312e81;top:40%;right:-60px;animation:drift2 26s ease-in-out infinite;opacity:0.8;}
+body.theme-midnight .o3{width:360px;height:360px;background:#3730a3;bottom:-60px;left:30%;animation:drift3 22s ease-in-out infinite;opacity:0.7;}
+body.theme-midnight .o4{width:260px;height:260px;background:#6d28d9;top:55%;left:55%;animation:drift4 28s ease-in-out infinite;opacity:0.5;}
+body.theme-midnight{color:#e0deff;}
+body.theme-rose .scene{background:#0d0108;}
+body.theme-rose .o1{width:620px;height:620px;background:#be123c;top:-140px;left:-100px;animation:drift1 18s ease-in-out infinite;}
+body.theme-rose .o2{width:500px;height:500px;background:#e11d48;top:30%;right:-80px;animation:drift2 22s ease-in-out infinite;}
+body.theme-rose .o3{width:420px;height:420px;background:#f43f5e;bottom:-80px;left:20%;animation:drift3 16s ease-in-out infinite;}
+body.theme-rose .o4{width:300px;height:300px;background:#fb7185;top:50%;left:50%;animation:drift4 20s ease-in-out infinite;opacity:0.6;}
+body.theme-rose{color:#fff0f4;}
+body.theme-arctic .scene{background:#000810;}
+body.theme-arctic .o1{width:640px;height:640px;background:#164e63;top:-160px;left:-100px;animation:drift1 28s ease-in-out infinite;}
+body.theme-arctic .o2{width:520px;height:520px;background:#22d3ee;top:20%;right:-120px;animation:drift2 22s ease-in-out infinite;opacity:0.5;}
+body.theme-arctic .o3{width:440px;height:440px;background:#0e7490;bottom:-80px;left:25%;animation:drift3 19s ease-in-out infinite;}
+body.theme-arctic .o4{width:340px;height:340px;background:#67e8f9;top:50%;left:40%;animation:drift4 24s ease-in-out infinite;opacity:0.45;}
+body.theme-arctic{color:#e8f8ff;}
+#stars{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 1.2s;}
+body.theme-midnight #stars{opacity:1;}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px;}
+
+.page{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 6rem;}
+.card{background:rgba(255,255,255,0.08);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.18);border-radius:28px;padding:2rem 2rem 2.5rem;width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:1.4rem;margin-top:1rem;box-shadow:0 8px 48px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15);}
+.card-header{width:100%;display:flex;align-items:center;justify-content:space-between;}
+.site-title{font-family:'DM Serif Display',serif;font-size:22px;letter-spacing:0.3px;opacity:0.9;}
+.settings-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;color:inherit;opacity:0.6;transition:all 0.2s;}
+.settings-btn:hover{background:rgba(255,255,255,0.18);opacity:1;}
+.settings-btn svg{transition:transform 0.5s ease;}
+.settings-btn:hover svg{transform:rotate(60deg);}
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,0.2);border-radius:50px;padding:4px;}
+.tab{font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 14px;border-radius:50px;border:none;cursor:pointer;color:inherit;background:transparent;opacity:0.55;transition:all 0.25s;letter-spacing:0.2px;}
+.tab.active{background:rgba(255,255,255,0.22);opacity:1;font-weight:500;}
+.tab:hover{opacity:0.85;}
+.clock-wrap{position:relative;width:220px;height:220px;}
+.ring-svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:5;}
+.ring-fill{fill:none;stroke:rgba(255,255,255,0.88);stroke-width:5;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(255,255,255,0.4));transition:stroke-dashoffset 1s linear;}
+.clock-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+.time-display{font-family:'DM Mono',monospace;font-size:50px;font-weight:500;letter-spacing:-2px;line-height:1;text-shadow:0 2px 20px rgba(0,0,0,0.3);}
+.mode-label{font-size:11px;opacity:0.55;text-transform:uppercase;letter-spacing:1.8px;}
+.sound-indicator{font-size:11px;opacity:0.45;letter-spacing:0.5px;display:flex;align-items:center;gap:5px;min-height:16px;}
+.sound-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:0;transition:opacity 0.3s;}
+.sound-dot.active{opacity:0.7;animation:pdot 1.8s ease-in-out infinite;}
+@keyframes pdot{0%,100%{transform:scale(1);}50%{transform:scale(1.5);}}
+.dots{display:flex;gap:7px;}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);transition:all 0.4s;}
+.dot.done{background:rgba(255,255,255,0.85);border-color:transparent;box-shadow:0 0 8px rgba(255,255,255,0.5);}
+.controls{display:flex;gap:10px;align-items:center;}
+.btn-icon{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:inherit;opacity:0.65;}
+.btn-icon:hover{background:rgba(255,255,255,0.2);opacity:1;border-color:rgba(255,255,255,0.45);}
+.btn-main{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:11px 42px;border-radius:50px;border:1px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.15);cursor:pointer;color:inherit;transition:all 0.2s;letter-spacing:0.5px;backdrop-filter:blur(8px);}
+.btn-main:hover{background:rgba(255,255,255,0.28);border-color:rgba(255,255,255,0.6);}
+.btn-main:active{transform:scale(0.97);}
+.task-wrap{width:100%;}
+.task-lbl{font-size:11px;opacity:0.45;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:7px;}
+.task-input{width:100%;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.07);font-family:'DM Sans',sans-serif;font-size:14px;color:inherit;outline:none;transition:all 0.2s;}
+.task-input::placeholder{opacity:0.35;}
+.task-input:focus{border-color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.12);}
+.stats{display:flex;gap:10px;width:100%;}
+.stat{flex:1;background:rgba(0,0,0,0.18);border-radius:14px;padding:12px 8px;text-align:center;border:1px solid rgba(255,255,255,0.08);}
+.stat-n{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;}
+.stat-l{font-size:10.5px;opacity:0.45;margin-top:2px;letter-spacing:0.3px;}
+.theme-badge{font-size:11px;opacity:0.4;letter-spacing:1.2px;text-transform:uppercase;}
+
+/* Settings */
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.settings-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-44%) scale(0.94);z-index:21;width:min(420px,calc(100vw - 32px));max-height:88vh;overflow-y:auto;background:rgba(12,8,24,0.92);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.16);border-radius:24px;padding:1.8rem;color:#f0e8ff;opacity:0;pointer-events:none;transition:all 0.32s cubic-bezier(.34,1.3,.64,1);}
+.settings-panel.open{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1);}
+.settings-panel::-webkit-scrollbar{width:4px;}
+.settings-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:4px;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.6rem;}
+.panel-title{font-family:'DM Serif Display',serif;font-size:20px;opacity:0.95;}
+.close-btn{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;color:inherit;opacity:0.6;transition:all 0.2s;font-size:16px;}
+.close-btn:hover{background:rgba(255,255,255,0.18);opacity:1;}
+.s-section{margin-bottom:1.5rem;}
+.s-label{font-size:10.5px;opacity:0.45;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:10px;}
+.duration-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.dur-item{display:flex;flex-direction:column;gap:5px;}
+.dur-name{font-size:11px;opacity:0.55;text-align:center;}
+.dur-input-wrap{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:6px 8px;}
+.dur-input{background:transparent;border:none;outline:none;font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:inherit;width:100%;text-align:center;}
+.dur-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.dur-unit{font-size:10px;opacity:0.4;text-align:center;}
+.dur-stepper{display:flex;flex-direction:column;gap:1px;}
+.step-btn{width:16px;height:12px;background:rgba(255,255,255,0.1);border:none;border-radius:3px;cursor:pointer;color:inherit;font-size:8px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.step-btn:hover{background:rgba(255,255,255,0.22);}
+.sound-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.sound-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);cursor:pointer;transition:all 0.2s;user-select:none;}
+.sound-card:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.22);}
+.sound-card.active{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.45);}
+.sound-card.active::after{content:'';position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.8);}
+.sound-card.sound-none{grid-column:1/-1;}
+.sound-icon{font-size:22px;line-height:1;}
+.sound-name{font-size:11px;opacity:0.65;}
+.volume-row{display:flex;align-items:center;gap:12px;margin-top:10px;}
+.vol-icon{font-size:15px;opacity:0.5;}
+.vol-slider{flex:1;-webkit-appearance:none;appearance:none;height:3px;border-radius:4px;background:rgba(255,255,255,0.2);outline:none;cursor:pointer;}
+.vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.85);cursor:pointer;transition:transform 0.15s;}
+.vol-slider::-webkit-slider-thumb:hover{transform:scale(1.3);}
+.vol-val{font-family:'DM Mono',monospace;font-size:12px;opacity:0.5;min-width:30px;text-align:right;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
+.toggle-lbl{font-size:13px;opacity:0.75;}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);transition:background 0.25s;}
+.toggle input:checked+.toggle-track{background:rgba(255,255,255,0.4);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.9);transition:transform 0.25s;}
+.toggle input:checked~.toggle-thumb{transform:translateX(18px);}
+.save-btn{width:100%;padding:11px;border-radius:50px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:inherit;cursor:pointer;transition:all 0.2s;letter-spacing:0.4px;margin-top:0.5rem;}
+.save-btn:hover{background:rgba(255,255,255,0.24);}
+.save-btn:active{transform:scale(0.98);}
+
+.picker{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:7px;align-items:center;background:rgba(0,0,0,0.35);backdrop-filter:blur(16px);padding:10px 18px;border-radius:50px;z-index:10;border:1px solid rgba(255,255,255,0.1);flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 32px);}
+.plbl{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;white-space:nowrap;}
+.sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.2s,border-color 0.2s;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.4);}
+.sw:hover{transform:scale(1.3);}
+.sw.active{border-color:#fff;transform:scale(1.25);}
+.sw[data-t="soothing"]{background:linear-gradient(135deg,#7c3aed,#db2777);}
+.sw[data-t="calm"]{background:linear-gradient(135deg,#0891b2,#0d9488);}
+.sw[data-t="morning"]{background:linear-gradient(135deg,#f59e0b,#ef4444);}
+.sw[data-t="evening"]{background:linear-gradient(135deg,#7c3aed,#fb923c);}
+.sw[data-t="coffee"]{background:linear-gradient(135deg,#92400e,#d97706);}
+.sw[data-t="forest"]{background:linear-gradient(135deg,#065f46,#4ade80);}
+.sw[data-t="ocean"]{background:linear-gradient(135deg,#1d4ed8,#0891b2);}
+.sw[data-t="midnight"]{background:linear-gradient(135deg,#1e1b4b,#6d28d9);}
+.sw[data-t="rose"]{background:linear-gradient(135deg,#be123c,#fb7185);}
+.sw[data-t="arctic"]{background:linear-gradient(135deg,#164e63,#67e8f9);}
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);color:#fff;padding:10px 22px;border-radius:50px;font-size:13px;transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;z-index:300;border:1px solid rgba(255,255,255,0.15);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+@media(max-width:480px){.card{padding:1.5rem 1.2rem 2rem;}.time-display{font-size:44px;}.clock-wrap{width:200px;height:200px;}}
+</style>
+</head>
+<body class="theme-soothing">
+
+<div class="scene">
+  <div class="orb o1"></div><div class="orb o2"></div>
+  <div class="orb o3"></div><div class="orb o4"></div>
+  <canvas id="stars"></canvas>
+</div>
+<div class="grain"></div>
+
+<div class="page">
+  <div class="card">
+    <div class="card-header">
+      <div class="site-title">🍅 Focus</div>
+      <button class="settings-btn" onclick="openSettings()" title="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="setMode('pomodoro')">Pomodoro</button>
+      <button class="tab" onclick="setMode('short')">Short break</button>
+      <button class="tab" onclick="setMode('long')">Long break</button>
+    </div>
+
+    <div class="clock-wrap">
+      <svg class="ring-svg" width="220" height="220" viewBox="0 0 220 220">
+        <circle class="ring-bg" cx="110" cy="110" r="98"/>
+        <circle class="ring-fill" id="ringFill" cx="110" cy="110" r="98"/>
+      </svg>
+      <div class="clock-inner">
+        <div class="time-display" id="timeDisplay">25:00</div>
+        <div class="mode-label" id="modeLabel">Focus time</div>
+      </div>
+    </div>
+
+    <div class="sound-indicator" id="soundIndicator">
+      <div class="sound-dot" id="soundDot"></div>
+      <span id="soundLabel"></span>
+    </div>
+
+    <div class="dots">
+      <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+      <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn-icon" onclick="resetTimer()" title="Reset">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      </button>
+      <button class="btn-main" id="mainBtn" onclick="toggleTimer()">Start</button>
+      <button class="btn-icon" onclick="skipSession()" title="Skip">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      </button>
+    </div>
+
+    <div class="task-wrap">
+      <div class="task-lbl">What are you working on?</div>
+      <input class="task-input" id="taskInput" type="text" placeholder="Enter your task..." maxlength="60"/>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="sPomodoros">0</div><div class="stat-l">Pomodoros</div></div>
+      <div class="stat"><div class="stat-n" id="sMinutes">0</div><div class="stat-l">Mins focused</div></div>
+      <div class="stat"><div class="stat-n" id="sStreak">0</div><div class="stat-l">Streak</div></div>
+    </div>
+    <div class="theme-badge" id="themeBadge">Soothing</div>
+  </div>
+</div>
+
+<div class="picker">
+  <span class="plbl">Mood</span>
+  <div class="sw active" data-t="soothing" title="Soothing" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="calm" title="Calm" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="morning" title="Morning" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="evening" title="Evening" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="coffee" title="Coffee" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="forest" title="Forest" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="ocean" title="Ocean" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="midnight" title="Midnight" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="rose" title="Rose" onclick="setTheme(this)"></div>
+  <div class="sw" data-t="arctic" title="Arctic" onclick="setTheme(this)"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSettings()"></div>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="panel-header">
+    <div class="panel-title">Settings</div>
+    <button class="close-btn" onclick="closeSettings()">✕</button>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Timer durations</div>
+    <div class="duration-grid">
+      <div class="dur-item">
+        <div class="dur-name">Pomodoro</div>
+        <div class="dur-input-wrap">
+          <input class="dur-input" id="durPomodoro" type="number" value="25" min="1" max="120"/>
+          <div class="dur-stepper"><button class="step-btn" onclick="step('durPomodoro',1)">▲</button><button class="step-btn" onclick="step('durPomodoro',-1)">▼</button></div>
+        </div>
+        <div class="dur-unit">min</div>
+      </div>
+      <div class="dur-item">
+        <div class="dur-name">Short break</div>
+        <div class="dur-input-wrap">
+          <input class="dur-input" id="durShort" type="number" value="5" min="1" max="60"/>
+          <div class="dur-stepper"><button class="step-btn" onclick="step('durShort',1)">▲</button><button class="step-btn" onclick="step('durShort',-1)">▼</button></div>
+        </div>
+        <div class="dur-unit">min</div>
+      </div>
+      <div class="dur-item">
+        <div class="dur-name">Long break</div>
+        <div class="dur-input-wrap">
+          <input class="dur-input" id="durLong" type="number" value="15" min="1" max="120"/>
+          <div class="dur-stepper"><button class="step-btn" onclick="step('durLong',1)">▲</button><button class="step-btn" onclick="step('durLong',-1)">▼</button></div>
+        </div>
+        <div class="dur-unit">min</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Ambient sound</div>
+    <div class="sound-grid">
+      <div class="sound-card sound-none active" data-sound="none" onclick="selectSound(this)"><div class="sound-icon">🔇</div><div class="sound-name">None</div></div>
+      <div class="sound-card" data-sound="rain" onclick="selectSound(this)"><div class="sound-icon">🌧️</div><div class="sound-name">Rain</div></div>
+      <div class="sound-card" data-sound="harmony" onclick="selectSound(this)"><div class="sound-icon">🎵</div><div class="sound-name">Harmony</div></div>
+      <div class="sound-card" data-sound="zen" onclick="selectSound(this)"><div class="sound-icon">🔔</div><div class="sound-name">Zen</div></div>
+      <div class="sound-card" data-sound="forest" onclick="selectSound(this)"><div class="sound-icon">🌿</div><div class="sound-name">Forest</div></div>
+      <div class="sound-card" data-sound="waves" onclick="selectSound(this)"><div class="sound-icon">🌊</div><div class="sound-name">Waves</div></div>
+    </div>
+    <div class="volume-row">
+      <span class="vol-icon">🔈</span>
+      <input class="vol-slider" id="volSlider" type="range" min="0" max="100" value="40" step="1" oninput="setVolume(this.value)"/>
+      <span class="vol-icon">🔊</span>
+      <span class="vol-val" id="volVal">40%</span>
+    </div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Behaviour</div>
+    <div class="toggle-row">
+      <span class="toggle-lbl">Auto-start breaks</span>
+      <label class="toggle"><input type="checkbox" id="autoBreak"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+    </div>
+    <div class="toggle-row" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:10px;">
+      <span class="toggle-lbl">Auto-start pomodoros</span>
+      <label class="toggle"><input type="checkbox" id="autoPomodoro"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+    </div>
+  </div>
+
+  <button class="save-btn" onclick="saveSettings()">Save settings</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── Stars ── */
+const cvs=document.getElementById('stars'),cx=cvs.getContext('2d');
+let stars=[];
+function initStars(){cvs.width=innerWidth;cvs.height=innerHeight;stars=Array.from({length:200},()=>({x:Math.random()*cvs.width,y:Math.random()*cvs.height,r:Math.random()*1.4+0.3,ph:Math.random()*Math.PI*2,sp:Math.random()*0.008+0.003}));}
+function drawStars(){cx.clearRect(0,0,cvs.width,cvs.height);stars.forEach(s=>{s.ph+=s.sp;cx.beginPath();cx.arc(s.x,s.y,s.r,0,Math.PI*2);cx.fillStyle=`rgba(255,255,255,${0.15+Math.abs(Math.sin(s.ph))*0.85})`;cx.fill();});requestAnimationFrame(drawStars);}
+initStars();drawStars();window.addEventListener('resize',initStars);
+
+/* ══════════════════════════════════════
+   AUDIO ENGINE — each sound uses a 
+   fundamentally different approach
+══════════════════════════════════════ */
+let AC=null, SN={gain:null,nodes:[],timers:[]}, currentSound='none', masterVol=0.4;
+
+function ac(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC;}
+
+function makeNoiseBuffer(type,secs=4){
+  const a=ac(),sr=a.sampleRate,buf=a.createBuffer(1,sr*secs,sr),d=buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0;
+  for(let i=0;i<d.length;i++){
+    const w=Math.random()*2-1;
+    if(type==='pink'){b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.969*b2+w*.153852;b3=.8665*b3+w*.3104856;b4=.55*b4+w*.5329522;b5=-.7616*b5-w*.016898;d[i]=(b0+b1+b2+b3+b4+b5+w*.5362)*.11;}
+    else if(type==='brown'){b0=(b0+.02*w)/1.02;d[i]=b0*3.5;}
+    else{d[i]=w;}
+  }
+  const src=a.createBufferSource();src.buffer=buf;src.loop=true;return src;
+}
+
+function noiseNode(type){return makeNoiseBuffer(type);}
+
+function stopSound(cb){
+  SN.timers.forEach(t=>clearTimeout(t));
+  if(SN.gain){
+    try{SN.gain.gain.setTargetAtTime(0,ac().currentTime,0.25);}catch(e){}
+    setTimeout(()=>{SN.nodes.forEach(n=>{try{n.stop();}catch(e){}});SN={gain:null,nodes:[],timers:[]};if(cb)cb();},600);
+  }else{SN={gain:null,nodes:[],timers:[]};if(cb)cb();}
+}
+
+function startSound(name){
+  const a=ac(),t=a.currentTime;
+  const master=a.createGain();master.gain.setValueAtTime(0,t);master.connect(a.destination);
+  const N=[],T=[];
+
+  /* ── RAIN: Layered realistic rain — background wash + individual droplets
+     + puddle resonance + distant thunder rumbles at intervals */
+  if(name==='rain'){
+    // Layer 1: distant rain wash (many drops blended together far away)
+    const wash=noiseNode('pink');
+    const wHp=a.createBiquadFilter();wHp.type='highpass';wHp.frequency.value=900;
+    const wLp=a.createBiquadFilter();wLp.type='lowpass';wLp.frequency.value=5500;
+    const wG=a.createGain();wG.gain.value=0.18;
+    wash.connect(wHp);wHp.connect(wLp);wLp.connect(wG);wG.connect(master);wash.start();N.push(wash);
+
+    // Layer 2: individual droplet impacts on ground
+    // Each drop: short noise burst, bandpass-filtered, amplitude decays fast
+    function drop(){
+      const ct=a.currentTime;
+      const size=Math.random(); // 0=small, 1=large
+      const freq=350+(1-size)*1400; // small=high, large=low
+      const amp=0.04+size*0.18;
+      const dur=0.012+size*0.035;
+      const len=Math.floor(a.sampleRate*(dur+0.08));
+      const buf=a.createBuffer(1,len,a.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(a.sampleRate*dur*0.25));
+      const src=a.createBufferSource();src.buffer=buf;
+      const bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=freq;bp.Q.value=2.5;
+      const dg=a.createGain();dg.gain.value=amp;
+      src.connect(bp);bp.connect(dg);dg.connect(master);
+      src.start(ct);N.push(src);
+      T.push(setTimeout(drop,12+Math.random()*55));
+    }
+    // Three parallel drop streams for natural density
+    for(let i=0;i<3;i++) T.push(setTimeout(drop,Math.random()*40));
+
+    // Layer 3: puddle splashes — deeper resonant "plop" sound
+    function splash(){
+      const ct=a.currentTime;
+      const len=Math.floor(a.sampleRate*0.25);
+      const buf=a.createBuffer(1,len,a.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(a.sampleRate*0.07));
+      const src=a.createBufferSource();src.buffer=buf;
+      // Low resonant frequency = water/puddle character
+      const bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=160+Math.random()*140;bp.Q.value=5;
+      const sg=a.createGain();sg.gain.value=0.28+Math.random()*0.2;
+      src.connect(bp);bp.connect(sg);sg.connect(master);
+      src.start(ct);N.push(src);
+      T.push(setTimeout(splash,180+Math.random()*500));
+    }
+    T.push(setTimeout(splash,100));
+
+    // Layer 4: distant thunder rumbles — soft, every 20-50s
+    function thunder(){
+      const bt=a.currentTime;
+      const buf=a.createBuffer(1,a.sampleRate*6,a.sampleRate);
+      const d=buf.getChannelData(0);let b=0;
+      for(let i=0;i<d.length;i++){b=(b+.02*(Math.random()*2-1))/1.02;d[i]=b*3.5;}
+      const src=a.createBufferSource();src.buffer=buf;
+      const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=85;
+      const pk=a.createBiquadFilter();pk.type='peaking';pk.frequency.value=50;pk.gain.value=10;
+      const tg=a.createGain();
+      // Slow build, slow fade — distant, not startling
+      tg.gain.setValueAtTime(0,bt);
+      tg.gain.linearRampToValueAtTime(0.6+Math.random()*0.5,bt+0.8);
+      tg.gain.setValueAtTime(0.6+Math.random()*0.5,bt+1.5);
+      tg.gain.exponentialRampToValueAtTime(0.001,bt+5+Math.random()*2);
+      src.connect(lp);lp.connect(pk);pk.connect(tg);tg.connect(master);
+      src.start(bt);src.stop(bt+7);N.push(src);
+      T.push(setTimeout(thunder,20000+Math.random()*30000));
+    }
+    T.push(setTimeout(thunder,6000+Math.random()*10000));
+  }
+
+  /* ── THUNDER: Quiet rain + dramatic low-frequency boom events
+     Character: intermittent, startling, very low rumbles every 20-45s */
+  /* ── HARMONY: Musical pad — Cmaj7 chord, slow LFO breath, slight chorus
+     Character: tonal, musical, warm, evolving slowly */
+  else if(name==='harmony'){
+    const freqs=[65.4,98,130.8,164.8,196,261.6,329.6,392];
+    freqs.forEach((freq,i)=>{
+      const osc=a.createOscillator();
+      osc.type=i<4?'sine':'triangle';
+      osc.frequency.value=freq+(Math.random()-.5)*.3;
+      const env=a.createGain();env.gain.value=0.055-i*0.004;
+      const lfo=a.createOscillator();lfo.frequency.value=0.1+i*0.023;
+      const ld=a.createGain();ld.gain.value=0.018;
+      lfo.connect(ld);ld.connect(env.gain);
+      osc.connect(env);env.connect(master);
+      osc.start();lfo.start();N.push(osc,lfo);
+    });
+  }
+
+  /* ── ZEN: Silence then singing bowl harmonics with long exponential decay
+     Character: periodic, spacious, bell-like, 7-15s between strikes */
+  else if(name==='zen'){
+    function strike(){
+      const st=a.currentTime;
+      // Realistic bowl: fundamental + inharmonic partials (2.76x, 5.4x, 8.9x ratio)
+      [[220,0.5,6],[607.2,0.22,4.5],[1188,0.1,3],[1958,0.05,2]].forEach(([freq,amp,decay],i)=>{
+        const osc=a.createOscillator();osc.type='sine';osc.frequency.value=freq;
+        const g=a.createGain();
+        g.gain.setValueAtTime(0,st);
+        g.gain.linearRampToValueAtTime(amp,st+0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001,st+decay);
+        osc.connect(g);g.connect(master);osc.start(st);osc.stop(st+decay+0.1);N.push(osc);
+      });
+      T.push(setTimeout(strike,7000+Math.random()*9000));
+    }
+    T.push(setTimeout(strike,800));
+  }
+
+  /* ── FOREST: Pink noise wind + FM bird chirps scheduled randomly
+     Character: airy, natural, bird calls every few seconds */
+  else if(name==='forest'){
+    const wind=noiseNode('pink');
+    const wf=a.createBiquadFilter();wf.type='bandpass';wf.frequency.value=650;wf.Q.value=0.28;
+    const wg=a.createGain();wg.gain.value=0.3;
+    wind.connect(wf);wf.connect(wg);wg.connect(master);wind.start();N.push(wind);
+    const leaves=noiseNode('white');
+    const lf=a.createBiquadFilter();lf.type='highpass';lf.frequency.value=4000;
+    const lg=a.createGain();lg.gain.value=0.04;
+    leaves.connect(lf);lf.connect(lg);lg.connect(master);leaves.start();N.push(leaves);
+    function chirp(){
+      const ct=a.currentTime;
+      const notes=2+Math.floor(Math.random()*4);
+      const baseFreq=1800+Math.random()*2200;
+      for(let n=0;n<notes;n++){
+        const osc=a.createOscillator();osc.type='sine';
+        const nt=ct+n*(0.07+Math.random()*0.08);
+        const dur=0.04+Math.random()*0.12;
+        const endFreq=baseFreq+(Math.random()-.4)*1400;
+        osc.frequency.setValueAtTime(baseFreq,nt);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(100,endFreq),nt+dur);
+        const g=a.createGain();
+        g.gain.setValueAtTime(0,nt);
+        g.gain.linearRampToValueAtTime(0.12,nt+0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001,nt+dur);
+        osc.connect(g);g.connect(master);osc.start(nt);osc.stop(nt+dur+.05);N.push(osc);
+      }
+      T.push(setTimeout(chirp,1800+Math.random()*5500));
+    }
+    chirp();
+  }
+
+  /* ── WAVES: Brown noise + SLOW sinusoidal LFO (0.12Hz ≈ 8s per wave cycle)
+     Character: rhythmic swell and retreat — you can FEEL waves coming and going */
+  else if(name==='waves'){
+    const noise=noiseNode('brown');
+    const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=600;
+    const wg=a.createGain();wg.gain.value=0.55;
+    // LFO drives the swell — this is what makes it feel like actual waves
+    const lfo=a.createOscillator();lfo.type='sine';lfo.frequency.value=0.12;
+    const ld=a.createGain();ld.gain.value=0.45;
+    lfo.connect(ld);ld.connect(wg.gain);
+    noise.connect(lp);lp.connect(wg);wg.connect(master);noise.start();lfo.start();N.push(noise,lfo);
+    // Foam/spray at wave crest (high-pass noise, also LFO-modulated)
+    const foam=noiseNode('white');
+    const fp=a.createBiquadFilter();fp.type='highpass';fp.frequency.value=3500;
+    const fg=a.createGain();fg.gain.value=0.06;
+    const flfo=a.createOscillator();flfo.type='sine';flfo.frequency.value=0.12;
+    const fld=a.createGain();fld.gain.value=0.05;
+    flfo.connect(fld);fld.connect(fg.gain);
+    foam.connect(fp);fp.connect(fg);fg.connect(master);foam.start();flfo.start();N.push(foam,flfo);
+  }
+
+  SN={gain:master,nodes:N,timers:T};
+  master.gain.setTargetAtTime(masterVol,a.currentTime,0.5);
+}
+
+function playSound(name){
+  stopSound(()=>{ if(name!=='none') startSound(name); });
+}
+
+function setVolume(v){
+  masterVol=v/100;
+  document.getElementById('volVal').textContent=v+'%';
+  if(SN.gain&&currentSound!=='none')SN.gain.gain.setTargetAtTime(masterVol,ac().currentTime,0.1);
+}
+
+/* ── Settings ── */
+function openSettings(){document.getElementById('overlay').classList.add('open');document.getElementById('settingsPanel').classList.add('open');}
+function closeSettings(){document.getElementById('overlay').classList.remove('open');document.getElementById('settingsPanel').classList.remove('open');}
+function step(id,dir){const el=document.getElementById(id);el.value=Math.max(+el.min,Math.min(+el.max,(+el.value||0)+dir));}
+
+function selectSound(el){
+  document.querySelectorAll('.sound-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentSound=el.dataset.sound;
+  playSound(currentSound);
+  const dot=document.getElementById('soundDot'),lbl=document.getElementById('soundLabel');
+  if(currentSound==='none'){dot.classList.remove('active');lbl.textContent='';}
+  else{dot.classList.add('active');lbl.textContent=el.querySelector('.sound-name').textContent;}
+}
+
+function saveSettings(){
+  const p=+document.getElementById('durPomodoro').value||25;
+  const s=+document.getElementById('durShort').value||5;
+  const l=+document.getElementById('durLong').value||15;
+  MODES.pomodoro.d=p*60;MODES.short.d=s*60;MODES.long.d=l*60;
+  if(!running)init(mode);
+  localStorage.setItem('pomo-s',JSON.stringify({p,s,l,sound:currentSound,vol:Math.round(masterVol*100),ab:document.getElementById('autoBreak').checked,ap:document.getElementById('autoPomodoro').checked}));
+  closeSettings();showToast('Settings saved ✓');
+}
+
+/* ── Timer ── */
+const MODES={pomodoro:{d:25*60,lbl:'Focus time'},short:{d:5*60,lbl:'Short break'},long:{d:15*60,lbl:'Long break'}};
+const NAMES={soothing:'Soothing',calm:'Calm',morning:'Morning',evening:'Evening',coffee:'Coffee',forest:'Forest',ocean:'Ocean',midnight:'Midnight',rose:'Rose',arctic:'Arctic'};
+const CIRC=2*Math.PI*98;
+let mode='pomodoro',totalSecs,remaining,running=false,iv=null,done=0,mins=0,streak=0;
+const ring=document.getElementById('ringFill'),timeEl=document.getElementById('timeDisplay'),modeEl=document.getElementById('modeLabel'),btnEl=document.getElementById('mainBtn');
+ring.style.strokeDasharray=CIRC;
+
+function init(m){const c=MODES[m];totalSecs=c.d;remaining=c.d;modeEl.textContent=c.lbl;render();}
+function render(){const m=Math.floor(remaining/60),s=remaining%60;timeEl.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');ring.style.strokeDashoffset=CIRC*(1-remaining/totalSecs);}
+function setMode(m){if(running)stop();mode=m;document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['pomodoro','short','long'][i]===m));btnEl.textContent='Start';init(m);}
+function toggleTimer(){running?stop():start();}
+function start(){running=true;btnEl.textContent='Pause';iv=setInterval(()=>{remaining--;render();if(remaining<=0)complete();},1000);}
+function stop(){running=false;btnEl.textContent='Resume';clearInterval(iv);}
+function resetTimer(){stop();init(mode);btnEl.textContent='Start';}
+function complete(){
+  stop();btnEl.textContent='Start';
+  const ab=document.getElementById('autoBreak').checked,ap=document.getElementById('autoPomodoro').checked;
+  if(mode==='pomodoro'){
+    done++;mins+=Math.round(MODES.pomodoro.d/60);streak++;
+    document.getElementById('d'+((done-1)%4)).classList.add('done');
+    document.getElementById('sPomodoros').textContent=done;
+    document.getElementById('sMinutes').textContent=mins;
+    document.getElementById('sStreak').textContent=streak;
+    if(done%4===0){document.querySelectorAll('.dot').forEach(d=>d.classList.remove('done'));showToast('4 pomodoros! Long break 🎉');setMode('long');if(ab)setTimeout(start,800);}
+    else{showToast('Great work! Short break ✨');setMode('short');if(ab)setTimeout(start,800);}
+  }else{showToast('Break over — ready? 🍅');setMode('pomodoro');if(ap)setTimeout(start,800);}
+}
+function skipSession(){stop();btnEl.textContent='Start';mode==='pomodoro'?setMode('short'):setMode('pomodoro');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+function setTheme(el){const th=el.dataset.t;document.body.className='theme-'+th;document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('active',s===el));document.getElementById('themeBadge').textContent=NAMES[th];localStorage.setItem('pomo-theme',th);}
+
+/* ── Restore ── */
+const st=localStorage.getItem('pomo-theme');
+if(st){const sw=document.querySelector('.sw[data-t="'+st+'"]');if(sw)setTheme(sw);}
+const ss=localStorage.getItem('pomo-s');
+if(ss){try{const s=JSON.parse(ss);document.getElementById('durPomodoro').value=s.p||25;document.getElementById('durShort').value=s.s||5;document.getElementById('durLong').value=s.l||15;MODES.pomodoro.d=(s.p||25)*60;MODES.short.d=(s.s||5)*60;MODES.long.d=(s.l||15)*60;if(s.vol!=null){document.getElementById('volSlider').value=s.vol;setVolume(s.vol);}if(s.ab)document.getElementById('autoBreak').checked=true;if(s.ap)document.getElementById('autoPomodoro').checked=true;if(s.sound&&s.sound!=='none'){const sc=document.querySelector('.sound-card[data-sound="'+s.sound+'"]');if(sc)selectSound(sc);}}catch(e){}}
+init('pomodoro');
+</script>
+</body>
+</html>
